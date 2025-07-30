@@ -1,0 +1,154 @@
+create database store;
+
+create table countries(
+    code int primary key ,
+    name varchar(20) unique ,
+    continent_name varchar(20) not null
+);
+
+
+create table users(
+    id int primary key ,
+    full_name varchar(20),
+    email varchar(20) unique ,
+    gender Char check ( gender='m' or gender='f' ),
+    date_of_birth varchar(20),
+    created_at datetime default CURRENT_TIMESTAMP,
+    country_code int,
+    foreign key (country_code) references countries(code)
+);
+
+
+create table orders(
+    id int primary key ,
+    user_id int ,
+    status varchar(6) check ( status='start' or status='finish' ),
+    foreign key (user_id) references users(id)
+);
+
+
+create table order_products(
+  order_id int,
+  product_id int,
+  quantity int default 0,
+    primary key (order_id,product_id),
+    foreign key (order_id) references orders(id),
+    foreign key (product_id) references products(id)
+);
+
+
+
+create table products(
+    id int primary key,
+    name varchar(10) not null,
+    price int default 0,
+    status varchar(10) check ( status='valid' or status='expired'),
+    created_at datetime default current_timestamp
+);
+
+
+
+#DML
+
+INSERT INTO countries (code, name, continent_name) VALUES
+(1, 'Saudi Arabia', 'Asia'),
+(2, 'United States', 'North America'),
+(3, 'Germany', 'Europe'),
+(4, 'Egypt', 'Africa'),
+(5, 'Japan', 'Asia');
+
+select * from countries;
+
+
+INSERT INTO users (id, full_name, email, gender, date_of_birth, country_code) VALUES
+(101, 'Faisal Almansour', 'faisal.m@outlook.com', 'm', '1998-07-22', 1),
+(102, 'Sarah Johnson', 'sarah.joh@gmail.com', 'f', '1992-03-18', 2),
+(103, 'Lukas Schmidt', 'lukas.sc@web.de', 'm', '1989-11-04', 3),
+(104, 'Noor El-Sayed', 'noor.elsa@gmail.com', 'f', '1995-09-30', 4),
+(105, 'Haruki Saito', 'haruki@yahoo.jp', 'm', '2001-01-17', 5);
+
+select * from users;
+
+
+INSERT INTO products (id, name, price, status) VALUES
+(201, 'MacBookPro', 7999, 'valid'),
+(202, 'iPhone 15', 4999, 'valid'),
+(203, 'Logitech', 250, 'valid'),
+(204, 'Samsung', 2000, 'expired'),
+(205, 'Anker', 120, 'valid');
+
+select * from products;
+
+INSERT INTO orders (id, user_id, status) VALUES
+(301, 101, 'start'),   -- Faisal
+(302, 102, 'finish'),  -- Sarah
+(303, 103, 'start'),   -- Lukas
+(304, 104, 'finish'),  -- Noor
+(305, 105, 'start');   -- Haruki
+
+select * from orders;
+
+
+
+INSERT INTO order_products (order_id, product_id, quantity) VALUES
+(301, 201, 1),  -- Faisal ordered MacBook
+(301, 203, 2),  -- Faisal also ordered 2 Mice
+(302, 202, 1),  -- Sarah ordered iPhone
+(304, 204, 1),  -- Noor ordered expired Tab
+(305, 205, 3);  -- Haruki ordered 3 Chargers
+
+select * from order_products;
+
+
+## UPDATE / DELETE
+-- first we have to disable foreign key checks
+-- to do that we need to write
+    set FOREIGN_KEY_CHECKS = 0;
+
+# Countries Table
+-- Update United States to USA
+update countries set name = 'USA' where name = 'United States';
+
+-- Delete Germany
+delete from countries where name = 'Germany';
+
+
+# Users Table
+-- Update: Change Sarah Johnson's email
+update users set email = 'Sarah@example.com' where id = 102;
+
+-- Delete: Remove user Haruki Saito
+delete from users where id = 105;
+
+# Products Table
+-- Update: Set price of "MacBookPro" to 8499
+update products set price = 8499 where name = 'MacBookPro';
+
+-- Delete: Remove expired product "Samsung"
+delete from products where status = 'expired';
+
+
+# Orders Table
+-- Update: Mark order 301 as finish
+update orders set status= 'finish' where id = 301;
+
+-- Delete: Delete order 303
+
+delete from orders where id=303;
+
+
+# Order Products Table
+-- Update: Change quantity of MacBook in order 301 to 2
+UPDATE order_products SET quantity = 2 WHERE order_id = 301 AND product_id = 201;
+
+-- Delete: Remove order-product pair for order 304
+DELETE FROM order_products WHERE order_id = 304 AND product_id = 204;
+
+
+## Then We Set Back foreign key checks
+
+set foreign_key_checks = 1;
+
+
+
+
